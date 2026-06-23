@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌍 Geografia do Mundo - Mapa Interativo</title>
+    href( )
+    <!-- Estilos CSS -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(145deg, #0b1a2e 0%, #1b3b4f 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(6px);
+            border-radius: 42px;
+            padding: 25px 30px 35px;
+            box-shadow: 0 25px 40px rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            max-width: 1100px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            color: #f2e9d0;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+            text-align: center;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        h1 span {
+            background: #d4a373;
+            color: #0b1a2e;
+            font-size: 1rem;
+            padding: 4px 18px;
+            border-radius: 60px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
+        }
+
+        #map-container {
+            background: #1f3a4b;
+            border-radius: 28px;
+            padding: 12px;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 12px 28px rgba(0, 0, 0, 0.5);
+        }
+
+        svg {
+            display: block;
+            width: 100%;
+            height: auto;
+            background: #1f3a4b;
+            border-radius: 20px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Estilos para os países (caminhos) */
+        .country {
+            fill: #2a5f7a;
+            stroke: #b8d4e3;
+            stroke-width: 0.8;
+            transition: fill 0.25s ease, stroke 0.2s, filter 0.2s;
+            cursor: pointer;
+            vector-effect: non-scaling-stroke;
+        }
+
+        .country:hover {
+            fill: #f4b942;
+            stroke: #ffdd99;
+            stroke-width: 1.2;
+            filter: drop-shadow(0 0 8px #f4b94288);
+        }
+
+        /* Destaque para o país selecionado */
+        .country.active {
+            fill: #e68a2e;
+            stroke: #ffe484;
+            stroke-width: 2px;
+            filter: drop-shadow(0 0 14px #ffb347);
+        }
+
+        /* legenda / rodapé com informações */
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 18px;
+            color: #d6e6f0;
+            font-size: 0.95rem;
+            padding: 0 6px;
+        }
+
+        #info-panel {
+            background: rgba(10, 25, 40, 0.7);
+            backdrop-filter: blur(4px);
+            padding: 10px 24px;
+            border-radius: 60px;
+            border: 1px solid #5a8ca5;
+            box-shadow: inset 0 1px 4px rgba(255, 255, 255, 0.08);
+            font-weight: 400;
+            letter-spacing: 0.3px;
+            color: #f0f7fc;
+            min-width: 200px;
+            text-align: center;
+        }
+
+        #info-panel strong {
+            color: #ffd78a;
+            font-weight: 500;
+        }
+
+        .legend-note {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 6px 18px 6px 14px;
+            border-radius: 60px;
+            border-left: 4px solid #f4b942;
+        }
+
+        .legend-note i {
+            font-style: normal;
+            background: #f4b942;
+            width: 14px;
+            height: 14px;
+            border-radius: 4px;
+            display: inline-block;
+            box-shadow: 0 0 8px #f4b94277;
+        }
+
+        .btn-reset {
+            background: #2b5f7a;
+            border: none;
+            color: #f0f7fc;
+            padding: 8px 22px;
+            border-radius: 60px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid #5a8ca5;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.5px;
+        }
+
+        .btn-reset:hover {
+            background: #3b7a9c;
+            transform: scale(1.02);
+            border-color: #aacfdf;
+            box-shadow: 0 4px 12px #1f3a4b;
+        }
+
+        .btn-reset:active {
+            transform: scale(0.96);
+        }
+
+        @media (max-width: 700px) {
+            .container {
+                padding: 16px;
+            }
+            h1 {
+                font-size: 1.7rem;
+            }
+            .footer {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            #info-panel {
+                padding: 10px 14px;
+                min-width: unset;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>
+            🌍 Geografia do Mundo
+            <span>interativo</span>
+        </h1>
+        <div id="map-container">
+            <!-- O mapa SVG será inserido aqui via JavaScript -->
+            <div id="map"></div>
+        </div>
+        <div class="footer">
+            <div id="info-panel">
+                🗺️ <strong id="country-name">Clique em um país</strong>
+            </div>
+            <div class="legend-note">
+                <i></i> <span>Passe o mouse / clique</span>
+            </div>
+            <button class="btn-reset" id="reset-btn">⟲ Limpar seleção</button>
+        </div>
+    </div>
+
+    <!-- Carregar D3.js e TopoJSON (para converter dados) -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+    <script>
+        (function() {
+            // --- 1. Configurações e variáveis globais ---
+            const width = 960;
+            const height = 500;
+
+            // Seletores
+            const mapDiv = document.getElementById('map');
+            const countryNameSpan = document.getElementById('country-name');
+
+            // --- 2. Criar SVG com projeção geográfica (Mercator) ---
+            const svg = d3.select("#map")
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("viewBox", `0 0 ${width} ${height}`)
+                .style("background", "#1f3a4b")
+                .style("border-radius", "20px");
+
+            // Projeção: Mercator com parâmetros ajustados para um bom enquadramento
+            const projection = d3.geoMercator()
+                .scale(145)
+                .translate([width / 2, height / 1.7])   // centraliza verticalmente
+                .center([0, 10]);                       // ligeiro ajuste norte
+
+            const pathGenerator = d3.geoPath()
+                .projection(projection);
+
+            // --- 3. Carregar dados GeoJSON (World Atlas) ---
+            const url = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json";
+
+            d3.json(url).then(worldData => {
+                // Converter TopoJSON → GeoJSON
+                const countries = topojson.feature(worldData, worldData.objects.countries);
+                
+                // --- 4. Desenhar os países ---
+                svg.selectAll(".country")
+                    .data(countries.features)
+                    .enter()
+                    .append("path")
+                    .attr("class", "country")
+                    .attr("d", pathGenerator)
+                    .attr("data-country", d => d.properties.name || "Desconhecido")
+                    // Tooltip nativo (título) 
+                    .append("title")
+                    .text(d => d.properties.name || "País");
+
+                // --- 5. Interação: clique e hover (com destaque) ---
+                // Função para resetar destaque
+                function resetActive() {
+                    svg.selectAll(".country").classed("active", false);
+                    countryNameSpan.textContent = "Clique em um país";
+                }
+
+                // Clique: mostra nome e destaca
+                svg.selectAll(".country")
+                    .on("click", function(event, d) {
+                        // Remove destaque de todos
+                        svg.selectAll(".country").classed("active", false);
+                        // Adiciona destaque ao clicado
+                        d3.select(this).classed("active", true);
+                        // Atualiza painel
+                        const nome = d.properties.name || "País sem nome";
+                        countryNameSpan.textContent = nome;
+                    })
+                    // Hover: já tem efeito via CSS, mas podemos adicionar algo extra
+                    .on("mouseover", function(event, d) {
+                        // (opcional) podemos mostrar tooltip, mas já temos title nativo
+                        // apenas para consistência, não fazemos nada extra.
+                    });
+
+                // --- 6. Botão reset ---
+                document.getElementById('reset-btn').addEventListener('click', function() {
+                    resetActive();
+                });
+
+                // --- 7. Inicializar com um país em destaque? (opcional) ---
+                // Por padrão, nenhum país selecionado.
+                countryNameSpan.textContent = "Clique em um país";
+
+                // --- 8. (Bônus) Ajuste de responsividade: redesenhar se necessário? 
+                //     Como usamos viewBox, o SVG se ajusta automaticamente.
+                //     Mas podemos adicionar um observer para redimensionar, caso queira.
+                //     Neste caso, mantemos fixo.
+
+                console.log("🌍 Mapa carregado com sucesso!");
+            }).catch(error => {
+                console.error("Erro ao carregar dados do mapa:", error);
+                countryNameSpan.textContent = "⚠️ Erro ao carregar mapa";
+                // Mostrar mensagem amigável no SVG
+                svg.append("text")
+                    .attr("x", width/2)
+                    .attr("y", height/2)
+                    .attr("text-anchor", "middle")
+                    .attr("fill", "#f0c0a0")
+                    .attr("font-size", "22px")
+                    .attr("font-weight", "300")
+                    .style("text-shadow", "0 2px 10px #00000088")
+                    .text("🌐 Dados não disponíveis");
+            });
+
+        })();
+    </script>
+    <!-- Pequeno fallback: caso o carregamento demore, mostra um texto -->
+    <noscript>
+        <div style="color:white; text-align:center; padding:20px;">
+            O JavaScript é necessário para visualizar o mapa interativo.
+        </div>
+    </noscript>
+</body>
+</html>
